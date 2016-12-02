@@ -1,6 +1,7 @@
 import pygame
 import random
-
+from pygame.sprite import *
+from pygame.locals import *
 # define some colors (R, G, B)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
@@ -8,12 +9,13 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 BLUE = (0, 0, 255)
+LIGHTBLUE= (30, 144, 255)
 # game settings
 WIDTH = 480
 HEIGHT = 600
 FPS = 60
-TITLE = "SHMUP"
-BGCOLOR = BLACK
+TITLE = "PIRATES ARE COMING!!!!"
+BGCOLOR = LIGHTBLUE
 
 ############  DEFINE SPRITES  ############
 class Player(pygame.sprite.Sprite):
@@ -26,6 +28,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
+        self.rect.left= WIDTH / 4
+        self.rect.right = WIDTH / 4
         self.speedx = 0
 
     def update(self):
@@ -51,9 +55,13 @@ class Player(pygame.sprite.Sprite):
         bullets.add(bullet)
         ######
     def power(self):
-        newbullet= NewBullet(self.rect.topleft and self.rect.topright, self.rect.top)
+        newbullet= NewBullet(self.rect.left, self.rect.top)
         all_sprites.add(newbullet)
         newbullets.add(newbullet)
+        #####
+        newbullet2= NewBullet(self.rect.right, self.rect.top)
+        all_sprites.add(newbullet2)
+        newbullets.add(newbullet2)
 
 class Mob(pygame.sprite.Sprite):
     # mob sprite - spawns above top and moves downward
@@ -65,7 +73,7 @@ class Mob(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(WIDTH - self.rect.width)
         self.rect.y = random.randrange(-80, -50)
-        self.speedy = random.randrange(1, 8)
+        self.speedy = random.randrange(1, 4)
 
     def update(self):
         self.rect.y += self.speedy
@@ -78,9 +86,10 @@ class Mob(pygame.sprite.Sprite):
 class Meteor(Mob):
     def __init__(self):
         Mob.__init__(self)
-        self.image=pygame.Surface((15, 20))
-        self.image.fill(BLUE)
-        self.speedy=random.randrange(5, 10)
+        #self.image=pygame.Surface((15, 20))
+        #self.image.fill(BLUE)
+        self.image=pygame.image.load("/Users/JBone/Documents/ssshark.bmp").convert_alpha()
+        self.speedy=random.randrange(1, 4)
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -105,11 +114,20 @@ class NewBullet(Bullet):
         self.image = pygame.Surface((5, 10))
         self.image.fill(GREEN)
 
-
+####
+num_hits= 0
 # initialize pygame
+pygame.mixer.init()
+pygame.mixer.pre_init(44100,-16,2, 3072)
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption(TITLE)
+#####Music Time#######
+pygame.mixer.music.load("Fack.wav")
+pygame.mixer.music.set_volume(0.7)
+pygame.mixer.music.play()
+
+###MOVE ABOVE###
 clock = pygame.time.Clock()
 
 # set up new game
@@ -144,10 +162,11 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 player.shoot()
-            elif event.key == pygame.K_m:
+            elif event.key == pygame.K_z:
                 player.power()
 
     ##### Game logic goes here  #########
+    
     all_sprites.update()
     # check if bullets hit mobs
     hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
@@ -155,13 +174,15 @@ while running:
         m = Mob()
         all_sprites.add(m)
         mobs.add(m)
+        num_hits +=1
     #check if bullets hit meteor
     hits= pygame.sprite.groupcollide(meteors, newbullets, True, True)
     for hit in hits:
         x = Meteor()
         all_sprites.add(x)
         meteors.add(x)
-
+        num_hits += (1/2)
+    
     # check if mobs hit player
     hits = pygame.sprite.spritecollide(player, mobs, False)
     if hits:
@@ -171,9 +192,15 @@ while running:
     hits= pygame.sprite.spritecollide(player, meteors, False)
     if hits:
         running = False
-
+    
     ##### Draw/update screen #########
     screen.fill(BGCOLOR)
+
+    myfont = pygame.font.Font(None, 30)
+    t=myfont.render("Hit Count: " + str(num_hits), False, (0, 255, 0))
+    screen.blit(t, (100, 100))
+    
     all_sprites.draw(screen)
     # after drawing, flip the display
     pygame.display.flip()
+print ('Final score is ' + str(num_hits))
