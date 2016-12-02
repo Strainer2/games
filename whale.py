@@ -77,7 +77,7 @@ class Pirate(pygame.sprite.Sprite):
 		#pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
 		self.rect.x = random.randrange(WIDTH - self.rect.width)
 		self.rect.y = random.randrange(-80, -50)
-		self.speedy = random.randrange(1, 4)
+		self.speedy = random.randrange(1, 8)
 
 	def update(self):
 		self.rect.y += self.speedy
@@ -96,7 +96,7 @@ class Shark(Pirate):
 		self.rect= self.image.get_rect()
 		self.radius= int(self.rect.width /2)
 		#pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
-		self.speedy=random.randrange(1, 4)
+		self.speedy=random.randrange(9, 12)
 
 class Whale(Pirate):
 	def __init__(self):

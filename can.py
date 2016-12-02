@@ -105,10 +105,9 @@ class Whale(Pirate):
 		self.rect= self.image.get_rect()
 		self.radius= int(self.rect.width /2)
 		self.health = 2
-	def update(self):
-		self.bullet_hit()
+	
 	def bullet_hit(self):
-		hit_list = pygame.sprite.spritecollide(whales, spears, True)
+		hit_list = pygame.sprite.spritecollide(self.rect, spears, True)
 		for x in hit_list:
 		   self.health -= 1
 		if self.health <= 0:
